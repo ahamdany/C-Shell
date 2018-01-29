@@ -33,17 +33,8 @@ int main(int argc, char *argv[], char* envp[]) {
         char* prompt = calloc(512,sizeof(char*));
         strcpy(prompt,dir_structure);
         strcat(prompt," :: ahamdany >>");
-        //strcat(prompt,KRED);
-        //strcat(prompt,KNRM);
-
-
-
         input = readline(prompt);
-        //write(1, "\e[s", strlen("\e[s"));
-        //write(1, "\e[20;10H", strlen("\e[20;10H"));
-        // write(1, "SomeText", strlen("SomeText"));
-        //write(1, "\e[u", strlen("\e[u"));
-
+        
         // If EOF is read (aka ^D) readline returns NULL
         if(input == NULL) {
             exit(3);
@@ -58,10 +49,7 @@ int main(int argc, char *argv[], char* envp[]) {
         }else if(execute(input)){
             continue;
         }
-
-
-
-        // Currently nothing is implemented
+        
         printf(EXEC_ERROR, input);
 
         // You should change exit to a "builtin" for your hw.

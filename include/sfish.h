@@ -1,7 +1,5 @@
 #ifndef SFISH_H
 #define SFISH_H
-
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,15 +25,12 @@
 #define SYNTAX_ERROR   "sfish syntax error: %s\n"
 #define EXEC_ERROR     "sfish exec error: %s\n"
 
-
 struct Node
 {
   int data;
   struct Node *next; // Pointer to next node in DLL
   struct Node *prev; // Pointer to previous node in DLL
 };
-
-//extern struct Node *process_list;
 
 void print_help(char* input);
 char* replace_with_tilda(char* cwd, const char* homedir);

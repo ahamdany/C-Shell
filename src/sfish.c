@@ -9,7 +9,7 @@ void print_help(char* input){
             return;
         }
     }
-
+    
     if(find_char(input,">")){
         exec_redirect_help(input,">");
     }else{
@@ -150,8 +150,6 @@ char* validate_and_fetch_arguments(char* input){
     return *arguments;
 }
 
-
-
 void cd(){
     const char *homedir = getenv("HOME");
     set_current_directory((char*)homedir);
@@ -197,7 +195,6 @@ void cd_dir(char* input){
 
 void pwd(char* input){
     printf("%s\n",getenv("PWD"));
-   // exec_redirect(input,">");
 }
 
 char* get_current_directory(){
@@ -217,34 +214,22 @@ void set_current_directory(char* directory){
     }
 }
 
-// void save_prev_directory(char* past_directory){
-//     strcpy(prev_directory,past_directory);
-// }
-
-// char* get_prev_directory(){
-//     return prev_directory;
-// }
-
-
 char** parse_arguments(char* input, char* break_point){
 
     char** arguments = calloc(512,sizeof(char*));
     char* temp_input = calloc(512,sizeof(char*));
     strcpy(temp_input,input);
-
     char * token;
     int count = 1;
-
     token = strtok (temp_input,break_point);
     arguments[0] = token;
-
+    
     while (token != NULL){
         token = strtok (NULL, break_point);
         arguments[count]=token;
         count++;
       }
-
-      return arguments;
+    return arguments;
 }
 
 char* get_executable_path(char* input){
@@ -294,7 +279,6 @@ int execute(char* input){
     }
 
     pid_t  pid;
-    //pid_t endPID;
     int status = 0;
     pid = fork();
 
@@ -404,14 +388,12 @@ int redirect(char* input){
     }
 
     if((greater_than =strstr(input,">")) != NULL){
-        //printf(">\n");
         great = true;
         greater_than_length = greater_than - input;
         ret = 1;
     }
 
     if((less_than =strstr(input,"<")) != NULL){
-        //printf("<\n");
         less =  true;
         less_than_length = less_than - input;
         ret = 1;
@@ -419,11 +401,9 @@ int redirect(char* input){
 
     if(great && less){
         if(greater_than_length>less_than_length){
-            //printf("<>\n");
             ret = case_three(input,less_than_length);
         }else{
            ret = case_four(input,less_than_length);
-            //printf("><\n");
         }
     }else if(great){
         if(strcmp(strtok(strdup(input)," "),"help")==0){
@@ -434,12 +414,9 @@ int redirect(char* input){
     }else if(less){
         ret = case_two(input, less_than_length);
     }else if((pipe =strstr(input,"|")) != NULL){
-        //printf("|\n");
         exec_pipe(input);
-        //printList(process_list);
         ret =1;
     }else{
-        //fprintf(stderr, "sfish syntax error: %s\n", strerror(errno));
         ret = 0;
     }
 
@@ -460,22 +437,15 @@ int find_index(char** args, char* character){
 
 }
 
- //prog1 [ARGS] > output.txt
 int case_one(char* input, int sym_index){
-    //printf("im in case 1\n");
     return exec_redirect(input,">");
-
 }
 
-//prog1 [ARGS] < input.txt
 int case_two(char* input, int sym_index){
-    //printf("im in case 2\n");
     return exec_redirect(input,"<");
 }
 
-//prog1 [ARGS] < input.txt > output.txt
 int case_three(char* input, int sym_index){
-   // printf("im in case 3\n");
     int fd_in = 0;
     int fd_out = 0;
     char* input_copy = strdup(input);
@@ -498,7 +468,6 @@ int case_three(char* input, int sym_index){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-
 
     int status = 0;
     pid_t pid = fork();
@@ -538,9 +507,7 @@ int case_three(char* input, int sym_index){
     return 1;
 }
 
-//prog1 [ARGS] > output.txt < input.txt
 int case_four(char* input, int sym_index){
-    //printf("im in case 3\n");
     int fd_in = 0;
     int fd_out = 0;
     char* input_copy = strdup(input);
@@ -549,36 +516,23 @@ int case_four(char* input, int sym_index){
     arguments = parse_arguments(input, " ");
     int file_position = find_index(arguments,">") + 1;
     prog_input = strtok(input_copy,">");
-   // printf("prog_input: %s\n",prog_input );
-    //printf("input_copy: %s\n", input_copy );
-
-
 
     fd_out = open(arguments[file_position],O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
     if(fd_out == -1){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-
-
+    
     file_position = find_index(arguments,"<") + 1;
-
     fd_in = open(arguments[file_position],O_RDONLY);
     if(fd_in == -1){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-    //printf("fd_in: %d sym_index: %d in_file: %s\n",fd_in,sym_index,arguments[file_position]);
-
-    //printf("prog_input: %s\n",prog_input );
-
-
-
+    
     int status = 0;
     pid_t pid = fork();
-
-
-
+    
     if(pid == 0)
     {           /* child */
 
@@ -604,8 +558,7 @@ int case_four(char* input, int sym_index){
         perror("sfish exec error: Fork failed\n");
         _exit(EXIT_FAILURE);
     }
-    else{                   /* parent */
-        // printf("PARENT PROCESS\n");
+    else{                       /* parent */
         if(waitpid(pid,&status,0) == -1){
             perror("sfish exec error: wait pid is -1\n");
             _exit(EXIT_FAILURE);
@@ -616,7 +569,6 @@ int case_four(char* input, int sym_index){
 }
 
 int exec_redirect(char* input,char* direction){
-
     int fd = 0;
     int FILE_NO = 0;
     char* prog_input = calloc(512,sizeof(char*));
@@ -628,7 +580,6 @@ int exec_redirect(char* input,char* direction){
     if(*direction == '>'){
         FILE_NO = STDOUT_FILENO;
         fd = open(arguments[file_position],O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
-        //printf("fd_out: %d file: %s",fd,arguments[2]);
         if(fd == -1){
             fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
             return 1;
@@ -640,27 +591,20 @@ int exec_redirect(char* input,char* direction){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-        //printf("fd_in: %d file: %s",fd,arguments[2]);
     }
-
 
     if(!get_executable_path(strdup(prog_input))){
         printf("sfish: %s: command not found\n",prog_input);
         return 1;
     }
-
-
     int status = 0;
     pid_t pid = fork();
-    //printf("child process, pid = %u\n",getpid());
-
 
     if(pid == 0){           /* child */
         if(dup2(fd,FILE_NO) == -1){
             return 0;
         }
         if(fd != FILE_NO){
-            //return 0;
             close(fd);
         }
         if(execv(get_executable_path(prog_input),parse_arguments(prog_input, " "))< 0){
@@ -669,16 +613,13 @@ int exec_redirect(char* input,char* direction){
         }
     }else if(pid < 0){           /* failed to fork */
         printf("Failed To Fork\n");
-        //return 0;
     }
     else{
 
         if(waitpid(pid,&status,0) == -1){
             perror(EXEC_ERROR);
         }
-
     }
-
     return 1;
 }
 
@@ -699,24 +640,15 @@ int validate_pipes(char** arguments){
 }
 
 int exec_pipe(char* input){
-    //struct Node *process_list = (struct Node *)calloc( 1024, sizeof(struct Node));
-
     char* prog_input = calloc(512,sizeof(char*));
     char** arguments = calloc(512,sizeof(char*));
     arguments = parse_arguments(input, "|");
     int total_pipes = array_size(arguments);
     int pipefds[2*total_pipes];
-    //int validation_counter = 0;
-
     int status;
     int i = 0;
     pid_t pid;
-
-    // if((validation_counter = validate_pipes(arguments)) > 0){
-    //     printf("sfish: %s: command not found\n", arguments[validation_counter-1]);
-    //     exit(EXIT_FAILURE);
-    // }
-
+    
     /* parent creates all needed pipes at the start */
     for( int i = 0; i < total_pipes; i++ ){
         if( pipe(pipefds + i*2) < 0 ){
@@ -724,8 +656,6 @@ int exec_pipe(char* input){
             exit(EXIT_FAILURE);
         }
     }
-
-
     int j = 0;
     int counter = 0;
     while(arguments[counter] != 0) {
@@ -738,9 +668,7 @@ int exec_pipe(char* input){
             }
             continue;
         }
-        //pid = fork();
         pid = fork();
-
         if(pid == 0) {
             //if not last command
             if(arguments[counter+1]){
@@ -749,8 +677,7 @@ int exec_pipe(char* input){
                     _exit(EXIT_FAILURE);
                 }
             }
-
-            //if not first command&& j!= 2*numPipes
+            
             if(j != 0 ){
                 if(dup2(pipefds[j-2], 0) < 0){
                     perror("sfish exec error: Dup2 failed\n");
@@ -758,7 +685,7 @@ int exec_pipe(char* input){
 
                 }
             }
-
+            
             for(i = 0; i < 2*total_pipes; i++){
                     close(pipefds[i]);
             }
@@ -778,16 +705,13 @@ int exec_pipe(char* input){
 
     }
     /**Parent closes the pipes and wait for children*/
-
     for(i = 0; i < 2 * total_pipes; i++){
         close(pipefds[i]);
     }
 
     for(i = 0; i < total_pipes + 1; i++){
-
         wait(&status);
     }
-
     return 1;
 }
 
@@ -803,12 +727,10 @@ int exec_redirect_help(char* input,char* direction){
 
     int fd = 0;
     int FILE_NO = 0;
-   // char* prog_input = calloc(512,sizeof(char*));
     char** arguments = calloc(512,sizeof(char*));
     arguments = parse_arguments(input, " ");
     int file_position = find_index(arguments,direction) + 1;
-   // prog_input = strtok(input,direction);
-
+    
     if(*direction == '>'){
         FILE_NO = STDOUT_FILENO;
         fd = open(arguments[file_position],O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
@@ -816,7 +738,6 @@ int exec_redirect_help(char* input,char* direction){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-        //printf("fd_out: %d file: %s",fd,arguments[2]);
     }else{
         FILE_NO = STDIN_FILENO;
         fd = open(arguments[file_position],O_RDONLY);
@@ -824,11 +745,7 @@ int exec_redirect_help(char* input,char* direction){
         fprintf(stderr, "sfish exec error:%s %s\n",arguments[file_position], strerror(errno));
         return 1;
     }
-        //printf("fd_in: %d file: %s",fd,arguments[2]);
-
     }
-
-
     int status = 0;
     pid_t pid = fork();
 
@@ -839,10 +756,8 @@ int exec_redirect_help(char* input,char* direction){
             _exit(EXIT_FAILURE);
         }
         if(fd != FILE_NO){
-            //return 0;
             close(fd);
         }
-        //(printf("got executed"));
         printf("%s","Shell written by Ali Hamdany\n");
         printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
         printf("help: Prints a list of all builtin functions and their basic usage.\nexit: Exits the shell by using the exit(3) function.\ncd: Changes the current working directory of the shell.\n   cd - should change the working directory to the last directory the user was in.\n   cd with no arguments should go to the user's home directory which is stored in the HOME environment variable.\n   cd . and cd .. should be handled correctly. . and .. are special directories that appear in every directory of a Unix system. They correspond to the current directory and previous directory of the current working directory.\npwd: Prints the absolute path of the current working directory. This can be obtained by using the getcwd(3) function.\n");
@@ -856,12 +771,10 @@ int exec_redirect_help(char* input,char* direction){
     }
     else
     {                   /* parent */
-        //printf("PARENT PROCESS\n");
         if(waitpid(pid,&status,0) == -1){
             perror("sfish exec error: wait pid is -1\n");
             _exit(EXIT_FAILURE);
         }
-
     }
 
     return 1;
